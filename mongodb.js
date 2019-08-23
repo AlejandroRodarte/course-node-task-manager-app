@@ -32,9 +32,64 @@ MongoClient.connect(connectionUrl, {
 
     // create collection named 'users' (table)
     // also, insert a document (record) with some data
+    // insertOne() accepts a callback to know if the insert failed or succeeded
     db.collection('users').insertOne({
         name: 'Andrew',
         age: 27
+    }, (error, result) => {
+
+        if (error) {
+            return console.log('Unable to insert the user.')
+        }
+
+        // the result (insert success) contains an ops object
+        // with the documents inserted (contains the id)
+        console.log(result.ops);
+
+    });
+
+    // use insertMany() to insert multiple documents
+    db.collection('users').insertMany([
+        {
+            name: 'Jen',
+            age: 28
+        },
+        {
+            name: 'Gunther',
+            age: 34
+        }
+    ], (error, result) => {
+
+        if (error) {
+            return console.log('Unable to insert the users.')
+        }
+
+        console.log(result.ops);
+
+    });
+
+    // create a new collection named 'tasks' and insert three different tasks
+    db.collection('tasks').insertMany([
+        {
+            task: 'Wash the dishes',
+            completed: false
+        },
+        {
+            task: 'Do the laundry',
+            completed: true
+        },
+        {
+            task: 'Walk the dogs',
+            completed: true
+        }
+    ], (error, result) => {
+
+        if (error) {
+            return console.log('Unable to insert the tasks.')
+        }
+
+        console.log(result.ops);
+
     });
 
 });
