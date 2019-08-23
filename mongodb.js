@@ -9,16 +9,6 @@ const connectionUrl = 'mongodb://127.0.0.1:27017';
 // place any name to the database
 const databaseName = 'task-app';
 
-// create a new globally unique object id
-const id = new ObjectID();
-
-// raw id (binary, 12 bytes)
-// this is the real id stored by MongoDB
-console.log(id.id.length);
-
-// id that we see (string, 24 bytes)
-console.log(id.toHexString().length);
-
 // use the client to connect to the database given the url
 // also, explicitly inform we want to parse the url
 // callback: code to run when the connection operation has finished (failed or success)
@@ -39,68 +29,67 @@ MongoClient.connect(connectionUrl, {
     // we also get a reference to the database from this db() method
     const db = client.db(databaseName);
 
-    // create collection named 'users' (table)
-    // also, insert a document (record) with some data
-    // insertOne() accepts a callback to know if the insert failed or succeeded
-    // now inserting the _id so that the server does not need to generate it
-    // db.collection('users').insertOne({
-    //     _id: id,
-    //     name: 'Andrew',
-    //     age: 27
-    // }, (error, result) => {
+    // findOne() to find the first query match (searching by name, but we can search by more fields)
+    // the object passed in is a called a query object
+    db.collection('users').findOne({
+        name: 'Jen'
+    }, (error, user) => {
 
-    //     if (error) {
-    //         return console.log('Unable to insert the user.')
-    //     }
+        if (error) {
+            console.log('Unable to fetch the user');
+        }
 
-    //     // the result (insert success) contains an ops object
-    //     // with the documents inserted (contains the id)
-    //     console.log(result.ops);
+        console.log(user);
 
-    // });
+    });
 
-    // use insertMany() to insert multiple documents
-    // db.collection('users').insertMany([
-    //     {
-    //         name: 'Jen',
-    //         age: 28
-    //     },
-    //     {
-    //         name: 'Gunther',
-    //         age: 34
-    //     }
-    // ], (error, result) => {
+    // search by id: remember, MongoDB stores id's in their raw binary form
+    // so we need to parse it from the 24-byte version to the 12-byte passing it as an argument to the ObjectID constructor
+    db.collection('users').findOne({
+        _id: new ObjectID('5d604cfba2c9ec33f89cba61')
+    }, (error, user) => {
 
-    //     if (error) {
-    //         return console.log('Unable to insert the users.')
-    //     }
+        if (error) {
+            console.log('Unable to fetch the user');
+        }
 
-    //     console.log(result.ops);
+        console.log(user);
 
-    // });
+    });
 
-    // create a new collection named 'tasks' and insert three different tasks
-    // db.collection('tasks').insertMany([
-    //     {
-    //         task: 'Wash the dishes',
-    //         completed: false
-    //     },
-    //     {
-    //         task: 'Do the laundry',
-    //         completed: true
-    //     },
-    //     {
-    //         task: 'Walk the dogs',
-    //         completed: true
-    //     }
-    // ], (error, result) => {
+    // find() to get all objects that match the query object criteria
+    // a callback is not required, since we get back a cursor from this method, which is a pointer to the
+    // matching data in the database
+    // the reason for this is because we might not just want all the array of resulting objects, but
+    // now other information such as the amount of matches
 
-    //     if (error) {
-    //         return console.log('Unable to insert the tasks.')
-    //     }
+    // the toArray() method of the returned Cursor object is that one that really returns the array of matching data
+    db.collection('users').find({
+        age: 27
+    }).toArray((error, users) => {
+        console.log(users);
+    });
 
-    //     console.log(result.ops);
+    // instead of toArray(), we use count() to determine the amount of matches we have, we are not interested in the
+    // data itself (we do not want to fetch it, just get the single count number back)
+    db.collection('users').find({
+        age: 27
+    }).count((error, count) => {
+        console.log(count);
+    });
 
-    // });
+    // query a task based on id
+    db.collection('tasks').findOne({
+        _id: new ObjectID('5d604e2aaae4ec3ad019755c')
+    }, (error, task) => {
+        console.log(task);
+    });
+
+    // query all uncomplete tasks and fetch them completely
+    db.collection('tasks').find({
+        completed: false
+    }).toArray((error, tasks) => {
+        console.log(tasks);
+    });
 
 });
