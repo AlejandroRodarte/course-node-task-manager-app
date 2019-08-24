@@ -45,41 +45,64 @@ const User = mongoose.model('User', {
                 throw new Error('Age must be a positive number.');
             }
         }
+    },
+
+    // password; String, required field, min length of 6, trim all white spaces and check if the
+    // word 'password' does not exist on the final trimmed and lowercased String
+    password: {
+        type: String,
+        required: true,
+        minlength: 7,
+        trim: true,
+        validate(value) {
+            if (value.toLowerCase().indexOf('password') !== -1) {
+                throw new Error('Password must not have the word \'password\' on it.')
+            }
+        }
     }
 
 });
 
 // define the Task model with data types
 // a document (table) named 'tasks' is created at this point
-// const Task = mongoose.model('Task', {
-//     description: {
-//         type: String
-//     },
-//     completed: {
-//         type: Boolean
-//     }
-// });
+const Task = mongoose.model('Task', {
+
+    // description: String, required field and trim white spaces
+    description: {
+        type: String,
+        required: true,
+        trim: true
+    },
+
+    // completed: Boolean and if not provided, default to false
+    completed: {
+        type: Boolean,
+        default: false
+    }
+
+});
 
 // create a new instance of the User model
-const user = new User({
-    name: '    Alejandro    ',
-    email: 'ALEX@GMAIL.COM   '
+// const user = new User({
+//     name: '    Andrew    ',
+//     email: 'myemail@mead.io   ',
+//     password: 'phone098!'
+// });
+
+// use the save() method to persist the data
+// user
+//     .save()
+//     .then(() => console.log(user))
+//     .catch(error => console.log(error));
+
+// create the Task model instance
+const task = new Task({
+    description: '     Walk the god     ',
+    completed: true
 });
 
 // use the save() method to persist the data
-user
+task
     .save()
-    .then(() => console.log(user))
+    .then(() => console.log(task))
     .catch(error => console.log(error));
-
-// create the Task model instance
-// const task = new Task({
-//     description: 'Wash the dishes',
-//     completed: false
-// });
-
-// use the save() method to persist the data
-// task
-//     .save()
-//     .then(() => console.log(task))
-//     .catch(error => console.log(error));
