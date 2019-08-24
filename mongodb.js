@@ -29,35 +29,23 @@ MongoClient.connect(connectionUrl, {
     // we also get a reference to the database from this db() method
     const db = client.db(databaseName);
 
-    // updateOne(): update just one document
-    // we require the regular query object to make the match
-    // and pass in an object with a $set property, which is an object which accepts the data
-    // we want to update to that found record
-    // since no callback was provided, the overloaded method returns a Promsie to access resolved/rejected data
+    // deleteMany(): delete multiple documents that match the search criteria
     db
         .collection('users')
-        .updateOne({
-            _id: new ObjectID('5d604b0d71bf731c7464b5bd')
-        }, {
-            $set: {
-                name: 'Alejandro'
-            }
+        .deleteMany({
+            age: 27
         })
         .then(result => console.log(result))
         .catch(error => console.log(error));
-    
-    // now using updateMany(), it works exactly the same as updateOne()
+
+
+    // deleteOne(): delete a single document based on search criteria
     db
         .collection('tasks')
-        .updateMany({
-            completed: false
-        }, {
-            $set: {
-                completed: true
-            }
+        .deleteOne({
+            task: 'Wash the dishes'
         })
         .then(result => console.log(result))
         .catch(error => console.log(error));
-        
 
 });
