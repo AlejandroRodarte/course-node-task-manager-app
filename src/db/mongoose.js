@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 const connectionUrl = 'mongodb://127.0.0.1:27017/task-app-api';
 
@@ -12,29 +13,57 @@ mongoose.connect(connectionUrl, {
 // define our model (object) for the user with data types
 // a document (table) named 'users' is created at this point
 const User = mongoose.model('User', {
+
+    // user name: String, required field and sanitize by trimming all spaces
     name: {
-        type: String
+        type: String,
+        required: true,
+        trim: true
     },
+
+    // user email: String, required field, trim all excessive spaces, make lowercase
+    // and use isEmail() validator to check if final, parsed email is correct
+    email: {
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true,
+        validate(value) {
+            if (!validator.isEmail(value)) {
+                throw new Error('Please provide a valid email.');
+            }
+        }
+    },
+
+    // user age; Number, if not provided, default to 0, validate custom method that checks
+    // for negative ages
     age: {
-        type: Number
+        type: Number,
+        default: 0,
+        validate(value) {
+            if (value < 0) {
+                throw new Error('Age must be a positive number.');
+            }
+        }
     }
+
 });
 
 // define the Task model with data types
 // a document (table) named 'tasks' is created at this point
-const Task = mongoose.model('Task', {
-    description: {
-        type: String
-    },
-    completed: {
-        type: Boolean
-    }
-});
+// const Task = mongoose.model('Task', {
+//     description: {
+//         type: String
+//     },
+//     completed: {
+//         type: Boolean
+//     }
+// });
 
 // create a new instance of the User model
 const user = new User({
-    name: 'Patricia',
-    age: 61
+    name: '    Alejandro    ',
+    email: 'ALEX@GMAIL.COM   '
 });
 
 // use the save() method to persist the data
@@ -43,15 +72,14 @@ user
     .then(() => console.log(user))
     .catch(error => console.log(error));
 
-
 // create the Task model instance
-const task = new Task({
-    description: 'Wash the dishes',
-    completed: false
-});
+// const task = new Task({
+//     description: 'Wash the dishes',
+//     completed: false
+// });
 
 // use the save() method to persist the data
-task
-    .save()
-    .then(() => console.log(task))
-    .catch(error => console.log(error));
+// task
+//     .save()
+//     .then(() => console.log(task))
+//     .catch(error => console.log(error));
