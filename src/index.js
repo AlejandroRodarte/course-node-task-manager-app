@@ -86,31 +86,31 @@ app.patch('/users/:id', async (req, res) => {
     // get id dynamic path variable
     const _id = req.params.id;
 
+    // possible error: an update on an unknown field is trying to be updated
+    
+    // 1. get all keys (fields to update) from the request body 
+    const updates = Object.keys(req.body);
+
+    // 2. define statically the fields this User model is allowed to receive updates on
+    const allowedUpdates = ['name', 'email', 'password', 'age'];
+
+    // every(): Array method, loops through each element, calling a callback that expects a 
+    // boolean return; will return true if ALL predicates are true, and false if JUST ONE predicate is false
+    // for the keys found in the request body, we will check if they exist on the static array of the allowed fields
+    const isValidOperation = updates.every(update => {
+        return allowedUpdates.includes(update);
+    });
+
+    // if any predicate returned a false statement, it meant that it was attempted to update an unknown field, 
+    // so return a 400 with an error message
+    if (!isValidOperation) {
+        return res.status(400).send({
+            error: 'Invalid updates!'
+        });
+    }
+
     // try to find user by id and update with the request body JSON object (updated data)
     try {
-
-        // possible error: an update on an unknown field is trying to be updated
-        
-        // 1. get all keys (fields to update) from the request body 
-        const updates = Object.keys(req.body);
-
-        // 2. define statically the fields this User model is allowed to receive updates on
-        const allowedUpdates = ['name', 'email', 'password', 'age'];
-
-        // every(): Array method, loops through each element, calling a callback that expects a 
-        // boolean return; will return true if ALL predicates are true, and false if JUST ONE predicate is false
-        // for the keys found in the request body, we will check if they exist on the static array of the allowed fields
-        const isValidOperation = updates.every(update => {
-            return allowedUpdates.includes(update);
-        });
-
-        // if any predicate returned a false statement, it meant that it was attempted to update an unknown field, 
-        // so return a 400 with an error message
-        if (!isValidOperation) {
-            return res.status(400).send({
-                error: 'Invalid updates!'
-            });
-        }
 
         // new: true -> returns the new document with the updated data
         // runValidators: true -> runs validators when attempting to update the data
@@ -192,6 +192,56 @@ app.post('/tasks', async (req, res) => {
         res.status(201).send(task);
     } catch (err) {
         res.status(400).send(err);
+    }
+
+});
+
+// PATCH /tasks/:id: update a particular task by its id
+app.patch('/tasks/:id', async (req, res) => {
+
+    // fetch dynamic id
+    const _id = req.params.id;
+
+    // get field names from request body and full list of updatable field names
+    const updates = Object.keys(req.body);
+    const allowedUpdates = ['description', 'completed'];
+
+    // check if every request body field name is included in the allowed updatable field name list
+    const isValidOperation = updates.every(update => {
+        return allowedUpdates.includes(update);
+    });
+
+    // use final predicate result
+    // false: attempted to update unknown field; set 400
+    if (!isValidOperation) {
+        return res.status(400).send({
+            error: 'Invalid updates!'
+        });
+    }
+
+    // try to
+    try {
+
+        // find a task by its id and update using the request body
+        // we want the updated task data and run validators on new data
+        const task = await Task.findByIdAndUpdate(_id, req.body, {
+            new: true,
+            runValidators: true
+        });
+
+        // no task was found: 404
+        if (!task) {
+            return res.status(404).send({
+                error: 'No task was found.'
+            });
+        }
+
+        // happy path: 200
+        res.status(200).send(task);
+
+    } catch (err) {
+        // error on request (by server or validation): 400 (for now)
+        res.status(400).send(err)
     }
 
 });
