@@ -27,7 +27,6 @@ app.get('/users', (req, res) => {
         .then(users => res.status(200).send(users))
         .catch(err => res.status(500).send(err));
 
-
 });
 
 // GET /users/:id: fetch a user by its id
@@ -77,6 +76,40 @@ app.post('/users', (req, res) => {
             res.status(400);
             res.send(err);
         });
+
+});
+
+// GET /tasks: fetch all tasks
+app.get('/tasks', (req, res) => {
+
+    Task
+        .find({})
+        .then(tasks => res.status(200).send(tasks))
+        .catch(err => res.status(500).send(err));
+
+});
+
+// GET /tasks/:id: fetch a task by its id
+app.get('/tasks/:id', (req, res) => {
+
+    // capture the id path variable
+    const _id = req.params.id;
+
+    // find it
+    Task
+        .findById(_id)
+        .then(task => {
+
+            // if no task was found, send a 404
+            if (!task) {
+                return res.status(404).send('No task was found.');
+            }
+
+            // if found, send 200 with task object
+            res.status(200).send(task);
+
+        })
+        .catch(err => res.status(500).send(err));
 
 });
 
