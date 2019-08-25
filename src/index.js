@@ -24,10 +24,33 @@ app.post('/users', (req, res) => {
 
     // save the user through Mongoose
     // if failure exists: set status code to 400 and respond with error
+    // 201: Success (object created)
+    // 400: Client error (malformed body)
     user
         .save()
         .then(() => {
+            res.status(201);
             res.send(user);
+        })
+        .catch((err) => {
+            res.status(400);
+            res.send(err);
+        });
+
+});
+
+// POST /tasks: create a new task and persist
+app.post('/tasks', (req, res) => {
+
+    // create a new task model instance
+    const task = new Task(req.body);
+
+    // persist to database and manage errors by setting a correct status code
+    task
+        .save()
+        .then(() => {
+            res.status(201);
+            res.send(task);
         })
         .catch((err) => {
             res.status(400);
