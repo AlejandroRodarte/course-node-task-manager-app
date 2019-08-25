@@ -134,6 +134,33 @@ app.patch('/users/:id', async (req, res) => {
 
 });
 
+// DELETE /users/:id: delete a user by its id
+app.delete('/users/:id', async (req, res) => {
+
+    // get id
+    const _id = req.params.id;
+
+    // try to
+    try {
+
+        // find user by id and delete
+        const user = await User.findByIdAndDelete(_id);
+
+        // user not found: 404
+        if (!user) {
+            return res.status(404).send();
+        }
+
+        // user found: 200
+        res.status(200).send(user);
+
+    } catch (err) {
+        // error on request: 500
+        res.status(500).send();
+    }
+
+});
+
 // GET /tasks: fetch all tasks
 // make callback an async function
 app.get('/tasks', async (req, res) => {
@@ -242,6 +269,33 @@ app.patch('/tasks/:id', async (req, res) => {
     } catch (err) {
         // error on request (by server or validation): 400 (for now)
         res.status(400).send(err)
+    }
+
+});
+
+// DELETE /tasks/:id: delete a task based on its id
+app.delete('/tasks/:id', async (req, res) => {
+    
+    // get id
+    const _id = req.params.id;
+
+    // try to
+    try {
+
+        // get the task by id and delete
+        const task = await Task.findByIdAndDelete(_id);
+
+        // task not found: 404
+        if (!task) {
+            return res.status(404).send();
+        }
+
+        // task found and deleted: 200
+        res.status(200).send(task);
+
+    } catch (err) {
+        // error on request: 500
+        res.status(500).send();
     }
 
 });
