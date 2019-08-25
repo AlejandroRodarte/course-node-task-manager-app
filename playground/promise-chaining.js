@@ -2,24 +2,29 @@ require('../src/db/mongoose');
 
 const User = require('../src/models/user');
 
-// findByIdAndUpdate(): find a document by id and update it
-User
-    .findByIdAndUpdate('5d616768ff0a131e2cb18931', {
-        age: 1
-    })
-    .then(user => {
+// translating async code to use async/await
+// 1. ALWAYS create a new asynf function
+const updateAgeAndCount = async (id, age) => {
 
-        console.log(user);
+    // first async task: find user by id and update its age
+    const user = await User.findByIdAndUpdate(id, {
+        age
+    });
 
-        // return a new Promise returned by countDocuments to find all documents that have an age field
-        // equal to 1
-        return User.countDocuments({
-            age: 1
-        });
+    // first async task finished: second async task: count documents with the age argument
+    const count = await User.countDocuments({
+        age
+    });
 
-    })
+    // return the Promise that resolved this awaited count
+    return count;
+
+};
+
+// 2. Use the async function to get the fully resolved data or an error if it happends in any 
+// of the 'await' Promises
+updateAgeAndCount('5d616768ff0a131e2cb18931', 30)
     .then(count => {
-        // access then() from countDocuments() promise; log the result
         console.log(count);
     })
     .catch(err => {

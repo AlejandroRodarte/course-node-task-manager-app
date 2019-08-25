@@ -2,17 +2,25 @@ require('../src/db/mongoose');
 
 const Task = require('../src/models/task');
 
-// first async task: findByIdAndDelete
-Task
-    .findByIdAndDelete('5d61cdcc83eb9a412ce4ee3f')
-    .then(() => {
-        // success first async task: execute second async task: countDocuments
-        return Task.countDocuments({
-            completed: false
-        });
-    })
+// delete a task by their id and count amount of incomplete tasks
+const deleteTaskAndCount = async (id) => {
+
+    // first async: wait for database to find task by id and delete
+    const task = await Task.findByIdAndDelete(id);
+
+    // first async finished: second async triggers: count incomplete tasks
+    const count = await Task.countDocuments({
+        completed: false
+    });
+
+    // return Promise that resolved second async
+    return count;
+
+};
+
+// call async function and use then() and catch() to log results
+deleteTaskAndCount('5d6162938530482fb801c22d')
     .then(count => {
-        // success second async task: log amount of not completed tasks
         console.log(count);
     })
     .catch(err => {
