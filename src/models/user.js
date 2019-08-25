@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema({
     // and use isEmail() validator to check if final, parsed email is correct
     email: {
         type: String,
+        unique: true,
         required: true,
         trim: true,
         lowercase: true,
@@ -53,6 +54,30 @@ const userSchema = new mongoose.Schema({
     }
 
 });
+
+// create a new method for the User model: findByCredentials()
+userSchema.statics.findByCredentials = async (email, password) => {
+
+    // find unique user by email
+    const user = await User.findOne({ email });
+
+    // user not found: throw error
+    if (!user) {
+        throw new Error('Unable to login.');
+    }
+
+    // compare given password and password on database
+    const isAuthenticated = await bcrypt.compare(password, user.password);
+
+    // password do not match: throw an error
+    if (!isAuthenticated) {
+        throw new Error('Unable to login.');
+    }
+
+    // passwords match: return user
+    return user;
+
+};
 
 // pre-save middleware: note we are not using an arrow function since we require access
 // to the 'this' value incoming from the called, which contains the user data to post/update

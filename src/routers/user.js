@@ -69,6 +69,21 @@ router.post('/users', async (req, res) => {
 
 });
 
+// POST /users/login: login with user credentials
+router.post('/users/login', async (req, res) => {
+
+    // try to find user by credentials and validate password
+    // validated: 200
+    // unvalidated: 400
+    try {
+        const user = await User.findByCredentials(req.body.email, req.body.password);
+        res.status(200).send(user);
+    } catch (err) {
+        res.status(400).send();
+    }
+
+});
+
 // PATCH /users/:id: update a user by its id
 router.patch('/users/:id', async (req, res) => {
 
