@@ -80,6 +80,60 @@ app.post('/users', async (req, res) => {
 
 });
 
+// PATCH /users/:id: update a user by its id
+app.patch('/users/:id', async (req, res) => {
+
+    // get id dynamic path variable
+    const _id = req.params.id;
+
+    // try to find user by id and update with the request body JSON object (updated data)
+    try {
+
+        // possible error: an update on an unknown field is trying to be updated
+        
+        // 1. get all keys (fields to update) from the request body 
+        const updates = Object.keys(req.body);
+
+        // 2. define statically the fields this User model is allowed to receive updates on
+        const allowedUpdates = ['name', 'email', 'password', 'age'];
+
+        // every(): Array method, loops through each element, calling a callback that expects a 
+        // boolean return; will return true if ALL predicates are true, and false if JUST ONE predicate is false
+        // for the keys found in the request body, we will check if they exist on the static array of the allowed fields
+        const isValidOperation = updates.every(update => {
+            return allowedUpdates.includes(update);
+        });
+
+        // if any predicate returned a false statement, it meant that it was attempted to update an unknown field, 
+        // so return a 400 with an error message
+        if (!isValidOperation) {
+            return res.status(400).send({
+                error: 'Invalid updates!'
+            });
+        }
+
+        // new: true -> returns the new document with the updated data
+        // runValidators: true -> runs validators when attempting to update the data
+        const user = await User.findByIdAndUpdate(_id, req.body, {
+            new: true,
+            runValidators: true
+        });
+
+        // user not found: 404
+        if (!user) {
+            return res.status(404).send();
+        }
+
+        // sucess: 200 and send updated user data
+        res.status(200).send(user);
+
+    } catch (err) {
+        // possible errors: internal server error and validation error
+        res.status(400).send(err);
+    }
+
+});
+
 // GET /tasks: fetch all tasks
 // make callback an async function
 app.get('/tasks', async (req, res) => {
