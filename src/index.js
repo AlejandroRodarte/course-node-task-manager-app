@@ -17,119 +17,128 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 
 // GET /users: fetch all users
-app.get('/users', (req, res) => {
+// make callback async
+app.get('/users', async (req, res) => {
 
-    // User.find() to make a query on the 'users' document
-    // empty query object forces to fetch all documents from database
-    // 500: Internal Server Error
-    User
-        .find({})
-        .then(users => res.status(200).send(users))
-        .catch(err => res.status(500).send(err));
+    // try to get all users
+    // success: 200
+    // fail: 500
+    try {
+        const users = await User.find({});
+        res.status(200).send(users);
+    } catch (err) {
+        res.status(500).send();
+    }
 
 });
 
 // GET /users/:id: fetch a user by its id
 // :id allows to catch the 'id' dynamic path variable
-app.get('/users/:id', (req, res) => {
+// make callback async
+app.get('/users/:id', async (req, res) => {
 
     // req.params stores all path variables from the incoming route
     // so we access the id from it
     const _id = req.params.id;
 
-    // use findById() to directly inject the _id path variable and make the query
-    // Mongoose automatically converts the String _id into its raw binary form
-    User
-        .findById(_id)
-        .then(user => {
+    // try to get user by id
+    try {
 
-            // if a user was not found (null), send a 404 NOT FOUND
-            if (!user) {
-                return res.status(404).send('The user was not found');
-            }
+        const user = await User.findById(_id);
 
-            // if it was found, send a 200 OK with the user object found
-            res.status(200).send(user);
+        // if user was not found, throw 404
+        if (!user) {
+            return res.status(404).send();
+        }
 
-        })
-        .catch(err => res.status(500).send(err));
+        // user found: throw 200
+        res.status(200).send(user);
+
+    } catch (err) {
+        // error on request: throw 500
+        res.status(500).send(err);
+    }
 
 });
 
 // POST /users: create a new user
-app.post('/users', (req, res) => {
+// make the callback asynchronous to use async/await
+app.post('/users', async (req, res) => {
 
     // use the request body parsed as JSON to create a new user
     const user = new User(req.body);
 
-    // save the user through Mongoose
-    // if failure exists: set status code to 400 and respond with error
-    // 201: Success (object created)
-    // 400: Client error (malformed body)
-    user
-        .save()
-        .then(() => {
-            res.status(201);
-            res.send(user);
-        })
-        .catch((err) => {
-            res.status(400);
-            res.send(err);
-        });
+    // try to save
+    // success: 201 and send user
+    // fail: 400 and send error
+    try {
+        await user.save();
+        res.status(201).send(user);
+    } catch (err) {
+        res.status(400).send(err);
+    }
 
 });
 
 // GET /tasks: fetch all tasks
-app.get('/tasks', (req, res) => {
+// make callback an async function
+app.get('/tasks', async (req, res) => {
 
-    Task
-        .find({})
-        .then(tasks => res.status(200).send(tasks))
-        .catch(err => res.status(500).send(err));
+    // try to fetch all tasks
+    // success: 200
+    // fail: 500
+    try {
+        const tasks = await Task.find({});
+        res.status(200).send(tasks);
+    } catch (err) {
+        res.status(500).send(err)
+    }
 
 });
 
 // GET /tasks/:id: fetch a task by its id
-app.get('/tasks/:id', (req, res) => {
+// make callback async
+app.get('/tasks/:id', async (req, res) => {
 
     // capture the id path variable
     const _id = req.params.id;
 
-    // find it
-    Task
-        .findById(_id)
-        .then(task => {
+    // try to get the task by its id
+    try {
 
-            // if no task was found, send a 404
-            if (!task) {
-                return res.status(404).send('No task was found.');
-            }
+        const task = await Task.findById(_id);
 
-            // if found, send 200 with task object
-            res.status(200).send(task);
+        // not found: 404
+        if (!task) {
+            return res.status(404).send();
+        }
 
-        })
-        .catch(err => res.status(500).send(err));
+        // found: 200
+        res.status(200).send(task);
+
+    } catch (err) {
+        // error on request: 500
+        res.status(500).send(err);
+    }
 
 });
 
 // POST /tasks: create a new task and persist
-app.post('/tasks', (req, res) => {
+// make async callback
+app.post('/tasks', async (req, res) => {
 
     // create a new task model instance
     const task = new Task(req.body);
 
-    // persist to database and manage errors by setting a correct status code
-    task
-        .save()
-        .then(() => {
-            res.status(201);
-            res.send(task);
-        })
-        .catch((err) => {
-            res.status(400);
-            res.send(err);
-        });
+    // try to save
+    // success: 201
+    // fail: 400
+    try {
+        await task.save();
+        res.status(201).send(task);
+    } catch (err) {
+        res.status(400).send(err);
+    }
 
 });
 
