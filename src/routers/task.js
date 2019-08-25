@@ -93,12 +93,17 @@ router.patch('/tasks/:id', async (req, res) => {
     // try to
     try {
 
-        // find a task by its id and update using the request body
-        // we want the updated task data and run validators on new data
-        const task = await Task.findByIdAndUpdate(_id, req.body, {
-            new: true,
-            runValidators: true
+        // for the pre-save middleware to work, we replace findByIdAndUpdate() with...
+        // 1. findById()
+        const task = await Task.findById(_id);
+
+        // 2. update manually each property
+        updates.forEach(update => {
+            task[update] = req.body[update];
         });
+
+        // 3. use save() to actually trigger the middleware
+        await task.save();
 
         // no task was found: 404
         if (!task) {

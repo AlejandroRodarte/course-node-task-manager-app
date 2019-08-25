@@ -101,12 +101,17 @@ router.patch('/users/:id', async (req, res) => {
     // try to find user by id and update with the request body JSON object (updated data)
     try {
 
-        // new: true -> returns the new document with the updated data
-        // runValidators: true -> runs validators when attempting to update the data
-        const user = await User.findByIdAndUpdate(_id, req.body, {
-            new: true,
-            runValidators: true
+        // for the pre-save middleware to work, we replace findByIdAndUpdate() with...
+        // 1. findById()
+        const user = await User.findById(_id);
+
+        // 2. update properties manually
+        updates.forEach(update => {
+            user[update] = req.body[update];
         });
+
+        // 3. use save() to actually trigger the middleware
+        await user.save();
 
         // user not found: 404
         if (!user) {

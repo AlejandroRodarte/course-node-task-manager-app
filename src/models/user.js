@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const bcrypt = require('bcryptjs');
 
-// define our model (object) for the user with data types
-// a document (table) named 'users' is created at this point
-const User = mongoose.model('User', {
+// the user schema
+const userSchema = new mongoose.Schema({
 
     // user name: String, required field and sanitize by trimming all spaces
     name: {
@@ -53,6 +53,27 @@ const User = mongoose.model('User', {
     }
 
 });
+
+// pre-save middleware: note we are not using an arrow function since we require access
+// to the 'this' value incoming from the called, which contains the user data to post/update
+userSchema.pre('save', async function (next) {
+
+    // get access to 'this' from the userSchema.pre() call, which is the user to save
+    const user = this;
+
+    // if the password was modified (either created or altered), we run the hashing algorithm
+    if (user.isModified('password')) {
+        user.password = await bcrypt.hash(user.password, 8);
+    }
+
+    // call next middleware
+    next();
+
+});
+
+// define our model (object) for the user with data types
+// a document (table) named 'users' is created at this point
+const User = mongoose.model('User', userSchema);
 
 // export the User model for other files to be able to create new users
 module.exports = User;
