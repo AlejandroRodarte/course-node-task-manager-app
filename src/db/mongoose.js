@@ -5,5 +5,6 @@ const connectionUrl = 'mongodb://127.0.0.1:27017/task-app-api';
 mongoose.connect(connectionUrl, {
     useNewUrlParser: true,
     useCreateIndex: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useFindAndModify: false
 });
