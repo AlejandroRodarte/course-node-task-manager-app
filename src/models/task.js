@@ -1,8 +1,6 @@
 const mongoose = require('mongoose');
 
-// define the Task model with data types
-// a document (table) named 'tasks' is created at this point
-const Task = mongoose.model('Task', {
+const taskSchema = new mongoose.Schema({
 
     // description: String, required field and trim white spaces
     description: {
@@ -25,7 +23,14 @@ const Task = mongoose.model('Task', {
         ref: 'User'
     }
 
+}, {
+    // enable timestamps (createdAt and updatedAt)
+    timestamps: true
 });
+
+// define the Task model with data types
+// a document (table) named 'tasks' is created at this point
+const Task = mongoose.model('Task', taskSchema);
 
 // export the Task model for other files to access and create instances of it
 module.exports = Task;

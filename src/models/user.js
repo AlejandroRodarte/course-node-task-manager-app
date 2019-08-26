@@ -67,6 +67,9 @@ const userSchema = new mongoose.Schema({
 
     }]
 
+}, {
+    // enable timestamps (createdAt and updatedAt)
+    timestamps: true
 });
 
 // virtual relationships that relate the User model with other models
