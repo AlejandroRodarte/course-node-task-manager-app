@@ -10,14 +10,29 @@ const router = new express.Router();
 // use the authentication middleware
 router.get('/tasks', auth, async (req, res) => {
 
+    // match empty object
+    const match = {};
+
+    // if 'complete' query param exists, set a 'completed' property on the empty object
+    // with the corresponding boolean value
+    if (req.query.completed) {
+        match.completed = req.query.completed === 'true' ? true : false;
+    }
+
     try {
 
         // find all tasks where their 'owner' foreign key matches the logged in user's
         // primary key
-        const tasks = await Task.find({
-            owner: req.user._id
-        });
-        res.status(200).send(tasks);
+        // populate according to some search criteria defined in the 'match' object
+        await req
+                .user
+                .populate({
+                    path: 'tasks',
+                    match
+                })
+                .execPopulate();
+
+        res.status(200).send(req.user.tasks);
 
     } catch (err) {
         res.status(500).send(err)
