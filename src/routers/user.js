@@ -100,9 +100,42 @@ router.post('/users/login', async (req, res) => {
 
 });
 
+// POST /users/logout: logout user
+router.post('/users/logout', auth, async (req, res) => {
+
+    // try to
+    try {
+
+        // remove the request token (current) from the user token's list
+        req.user.tokens = req.user.tokens.filter(token => token.token !== req.token);
+
+        // req.user is a mere reference to the same user model, so persist with save and send 200 status code
+        await req.user.save();
+        res.status(200).send();
+
+    } catch (err) {
+        res.status(500).send();
+    }
+
+});
+
+// POST /users/logoutAll: logout user from all devices
+router.post('/users/logoutAll', auth, async (req, res) => {
+
+    // try to remove all tokens from the user's tokens array and persist
+    try {
+        req.user.tokens = [];
+        await req.user.save();
+        res.status(200).send();
+    } catch (err) {
+        res.status(500).send();
+    }
+
+});
+
 // PATCH /users/:id: update a user by its id
 // use auth middleware to authenticate user before running route handler
-router.patch('/users/:id', auth, async (req, res) => {
+router.patch('/users/:id', async (req, res) => {
 
     // get id dynamic path variable
     const _id = req.params.id;
@@ -162,7 +195,7 @@ router.patch('/users/:id', auth, async (req, res) => {
 
 // DELETE /users/:id: delete a user by its id
 // use auth middleware to authenticate user before running route handler
-router.delete('/users/:id', auth, async (req, res) => {
+router.delete('/users/:id', async (req, res) => {
 
     // get id
     const _id = req.params.id;
