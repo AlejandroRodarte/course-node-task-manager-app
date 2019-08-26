@@ -93,6 +93,23 @@ userSchema.methods.generateAuthToken = async function () {
 
 };
 
+// toJSON instance method: implicitly run before stringifying an object
+userSchema.methods.toJSON = function() {
+
+    // get a JSON object from the user model (new reference)
+    const user = this;
+    const userObject = user.toObject();
+
+    // delete the password and tokens properties
+    delete userObject.password;
+    delete userObject.tokens;
+
+    // return filtered user object. JSON.stringify() will not contemplate deleted
+    // properties (used by Express when sending a response)
+    return userObject;
+
+}
+
 // create a new method for the User model: findByCredentials()
 // this can be seen as static methods that belong to a 'User' class
 userSchema.statics.findByCredentials = async (email, password) => {
