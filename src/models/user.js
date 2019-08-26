@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Task = require('../models/task');
 
 // the user schema
 const userSchema = new mongoose.Schema({
@@ -161,6 +162,20 @@ userSchema.pre('save', async function (next) {
     }
 
     // call next middleware
+    next();
+
+});
+
+// pre-remove middleware: regular function since we require access to the user instance to delete
+userSchema.pre('remove', async function (next) {
+
+    const user = this;
+
+    // deleteMany() and delete all tasks that match the user to delete id
+    await Task.deleteMany({
+        owner: user._id
+    });
+    
     next();
 
 });
