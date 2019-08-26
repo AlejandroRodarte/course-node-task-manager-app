@@ -5,16 +5,20 @@ const Task = require('../models/task');
 // create a new router for task endpoints
 const router = new express.Router();
 
-// GET /tasks: fetch all tasks
+// GET /tasks: fetch all tasks related to a particular user
 // make callback an async function
-router.get('/tasks', async (req, res) => {
+// use the authentication middleware
+router.get('/tasks', auth, async (req, res) => {
 
-    // try to fetch all tasks
-    // success: 200
-    // fail: 500
     try {
-        const tasks = await Task.find({});
+
+        // find all tasks where their 'owner' foreign key matches the logged in user's
+        // primary key
+        const tasks = await Task.find({
+            owner: req.user._id
+        });
         res.status(200).send(tasks);
+
     } catch (err) {
         res.status(500).send(err)
     }
@@ -23,15 +27,20 @@ router.get('/tasks', async (req, res) => {
 
 // GET /tasks/:id: fetch a task by its id
 // make callback async
-router.get('/tasks/:id', async (req, res) => {
+// add the authentication middleware
+router.get('/tasks/:id', auth, async (req, res) => {
 
     // capture the id path variable
     const _id = req.params.id;
 
-    // try to get the task by its id
+    // try to get the task by its id and their own user id to verify
+    // the task to fetch is one created by such user and not an unknown one
     try {
 
-        const task = await Task.findById(_id);
+        const task = await Task.findOne({
+            _id,
+            owner: req.user._id
+        });
 
         // not found: 404
         if (!task) {
@@ -72,7 +81,8 @@ router.post('/tasks', auth, async (req, res) => {
 });
 
 // PATCH /tasks/:id: update a particular task by its id
-router.patch('/tasks/:id', async (req, res) => {
+// use auth middleware
+router.patch('/tasks/:id', auth, async (req, res) => {
 
     // fetch dynamic id
     const _id = req.params.id;
@@ -98,16 +108,11 @@ router.patch('/tasks/:id', async (req, res) => {
     try {
 
         // for the pre-save middleware to work, we replace findByIdAndUpdate() with...
-        // 1. findById()
-        const task = await Task.findById(_id);
-
-        // 2. update manually each property
-        updates.forEach(update => {
-            task[update] = req.body[update];
+        // 1. findOne() to find task by id and by its foreign user's id (verify task was made by user)
+        const task = await Task.findOne({
+            _id,
+            owner: req.user._id
         });
-
-        // 3. use save() to actually trigger the middleware
-        await task.save();
 
         // no task was found: 404
         if (!task) {
@@ -115,6 +120,14 @@ router.patch('/tasks/:id', async (req, res) => {
                 error: 'No task was found.'
             });
         }
+        
+        // 2. update manually each property
+        updates.forEach(update => {
+            task[update] = req.body[update];
+        });
+
+        // 3. use save() to actually trigger the middleware
+        await task.save();
 
         // happy path: 200
         res.status(200).send(task);
@@ -127,7 +140,8 @@ router.patch('/tasks/:id', async (req, res) => {
 });
 
 // DELETE /tasks/:id: delete a task based on its id
-router.delete('/tasks/:id', async (req, res) => {
+// add authentication middleware
+router.delete('/tasks/:id', auth, async (req, res) => {
     
     // get id
     const _id = req.params.id;
@@ -135,8 +149,11 @@ router.delete('/tasks/:id', async (req, res) => {
     // try to
     try {
 
-        // get the task by id and delete
-        const task = await Task.findByIdAndDelete(_id);
+        // get the task by id, user id (verify user created the task) and delete
+        const task = await Task.findOneAndDelete({
+            _id,
+            owner: req.user._id
+        });
 
         // task not found: 404
         if (!task) {
