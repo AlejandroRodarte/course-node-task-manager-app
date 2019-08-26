@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // the user schema
 const userSchema = new mongoose.Schema({
@@ -51,11 +52,49 @@ const userSchema = new mongoose.Schema({
                 throw new Error('Password must not have the word \'password\' on it.')
             }
         }
-    }
+    },
+
+    // to allow users to have multiple tokens (maybe one for their PC and other one for their mobile device), 
+    // we make the 'tokens' property of this schema an array of sub-documents, where each document is a...
+    tokens: [{
+
+        // token of type String and needs to be required: this sub-document will have its own id
+        token: {
+            type: String,
+            required: true
+        }
+
+    }]
 
 });
 
+// create a new method for a user instance: generateAuthToken()
+// this can be seen as an instance method (non-static), which belongs to a User instance
+// here, we need access to the 'this' binding provided by the caller which contains the user data
+// so we do not use arrow functions
+userSchema.methods.generateAuthToken = async function () {
+
+    // access user instead of this for better understanding
+    const user = this;
+
+    // create the new token: place in the JWT payload the unique id identifier (parse to String)
+    // and place a random secret key
+    const token = jwt.sign({ _id: user._id.toString() }, 'alejandroRodarte');
+
+    // append to the 'tokens' array the new token
+    // note: for some reason in Mongoose to push new elements in an array you have to use concat()
+    // even though push() might work
+    user.tokens = user.tokens.concat({ token });
+
+    // save changes
+    await user.save();
+
+    return token;
+
+};
+
 // create a new method for the User model: findByCredentials()
+// this can be seen as static methods that belong to a 'User' class
 userSchema.statics.findByCredentials = async (email, password) => {
 
     // find unique user by email

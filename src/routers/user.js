@@ -61,8 +61,19 @@ router.post('/users', async (req, res) => {
     // success: 201 and send user
     // fail: 400 and send error
     try {
+
+        // persist user
         await user.save();
-        res.status(201).send(user);
+
+        // generate token and persist again
+        const token = await user.generateAuthToken();
+
+        // respond with user data and generated token
+        res.status(201).send({
+            user,
+            token
+        });
+
     } catch (err) {
         res.status(400).send(err);
     }
@@ -76,8 +87,18 @@ router.post('/users/login', async (req, res) => {
     // validated: 200
     // unvalidated: 400
     try {
+
         const user = await User.findByCredentials(req.body.email, req.body.password);
-        res.status(200).send(user);
+
+        // generate a JWT for that particular user
+        const token = await user.generateAuthToken();
+
+        // respond with the user data and the generated token
+        res.status(200).send({
+            user,
+            token
+        });
+
     } catch (err) {
         res.status(400).send();
     }
