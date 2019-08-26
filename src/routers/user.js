@@ -15,36 +15,6 @@ router.get('/users/me', auth,  async (req, res) => {
     res.send(req.user);
 });
 
-// GET /users/:id: fetch a user by its id
-// :id allows to catch the 'id' dynamic path variable
-// make callback async
-// use auth middleware to authenticate user before running route handler
-router.get('/users/:id', auth, async (req, res) => {
-
-    // req.params stores all path variables from the incoming route
-    // so we access the id from it
-    const _id = req.params.id;
-
-    // try to get user by id
-    try {
-
-        const user = await User.findById(_id);
-
-        // if user was not found, throw 404
-        if (!user) {
-            return res.status(404).send();
-        }
-
-        // user found: throw 200
-        res.status(200).send(user);
-
-    } catch (err) {
-        // error on request: throw 500
-        res.status(500).send(err);
-    }
-
-});
-
 // POST /users: create a new user
 // make the callback asynchronous to use async/await
 router.post('/users', async (req, res) => {
@@ -133,12 +103,9 @@ router.post('/users/logoutAll', auth, async (req, res) => {
 
 });
 
-// PATCH /users/:id: update a user by its id
+// PATCH /users/me: update a user by its id
 // use auth middleware to authenticate user before running route handler
-router.patch('/users/:id', async (req, res) => {
-
-    // get id dynamic path variable
-    const _id = req.params.id;
+router.patch('/users/me', auth, async (req, res) => {
 
     // possible error: an update on an unknown field is trying to be updated
     
@@ -166,25 +133,17 @@ router.patch('/users/:id', async (req, res) => {
     // try to find user by id and update with the request body JSON object (updated data)
     try {
 
-        // for the pre-save middleware to work, we replace findByIdAndUpdate() with...
-        // 1. findById()
-        const user = await User.findById(_id);
-
-        // 2. update properties manually
+        // update properties to the user in the request object manually
+        // we no longer use findByIdAndUpdate since it was already found in the middleware
         updates.forEach(update => {
-            user[update] = req.body[update];
+            req.user[update] = req.body[update];
         });
 
         // 3. use save() to actually trigger the middleware
-        await user.save();
-
-        // user not found: 404
-        if (!user) {
-            return res.status(404).send();
-        }
+        await req.user.save();
 
         // sucess: 200 and send updated user data
-        res.status(200).send(user);
+        res.status(200).send(req.user);
 
     } catch (err) {
         // possible errors: internal server error and validation error
@@ -193,27 +152,14 @@ router.patch('/users/:id', async (req, res) => {
 
 });
 
-// DELETE /users/:id: delete a user by its id
+// DELETE /users/me: delete a user by its id
 // use auth middleware to authenticate user before running route handler
-router.delete('/users/:id', async (req, res) => {
-
-    // get id
-    const _id = req.params.id;
+router.delete('/users/me', auth, async (req, res) => {
 
     // try to
     try {
-
-        // find user by id and delete
-        const user = await User.findByIdAndDelete(_id);
-
-        // user not found: 404
-        if (!user) {
-            return res.status(404).send();
-        }
-
-        // user found: 200
-        res.status(200).send(user);
-
+        await req.user.remove();
+        res.status(200).send(req.user);
     } catch (err) {
         // error on request: 500
         res.status(500).send();
