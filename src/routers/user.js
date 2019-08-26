@@ -2,29 +2,24 @@ const express = require('express');
 
 const User = require('../models/user');
 
+// import the authentication middleware
+const auth = require('../middleware/auth');
+
 // create a new router for user-related routes
 const router = new express.Router();
 
-// GET /users: fetch all users
+// GET /users/me: fetch logged in user
 // make callback async
-router.get('/users', async (req, res) => {
-
-    // try to get all users
-    // success: 200
-    // fail: 500
-    try {
-        const users = await User.find({});
-        res.status(200).send(users);
-    } catch (err) {
-        res.status(500).send();
-    }
-
+// we attached on the auth middleware a 'user' property to the request so we can send it
+router.get('/users/me', auth,  async (req, res) => {
+    res.send(req.user);
 });
 
 // GET /users/:id: fetch a user by its id
 // :id allows to catch the 'id' dynamic path variable
 // make callback async
-router.get('/users/:id', async (req, res) => {
+// use auth middleware to authenticate user before running route handler
+router.get('/users/:id', auth, async (req, res) => {
 
     // req.params stores all path variables from the incoming route
     // so we access the id from it
@@ -106,7 +101,8 @@ router.post('/users/login', async (req, res) => {
 });
 
 // PATCH /users/:id: update a user by its id
-router.patch('/users/:id', async (req, res) => {
+// use auth middleware to authenticate user before running route handler
+router.patch('/users/:id', auth, async (req, res) => {
 
     // get id dynamic path variable
     const _id = req.params.id;
@@ -165,7 +161,8 @@ router.patch('/users/:id', async (req, res) => {
 });
 
 // DELETE /users/:id: delete a user by its id
-router.delete('/users/:id', async (req, res) => {
+// use auth middleware to authenticate user before running route handler
+router.delete('/users/:id', auth, async (req, res) => {
 
     // get id
     const _id = req.params.id;
