@@ -68,6 +68,19 @@ const userSchema = new mongoose.Schema({
 
 });
 
+// virtual relationships that relate the User model with other models
+// virtual relationship data is not stored in the database
+// OneToMany: One user, many tasks
+// set a reference to the Task model
+// localField: the primary key of the User model
+// foreignField: the field of the other entity which holds a reference to the User model primary key, 
+// which goes under the name of 'owner'
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner'
+});
+
 // create a new method for a user instance: generateAuthToken()
 // this can be seen as an instance method (non-static), which belongs to a User instance
 // here, we need access to the 'this' binding provided by the caller which contains the user data

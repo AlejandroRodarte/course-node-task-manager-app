@@ -15,6 +15,14 @@ const Task = mongoose.model('Task', {
     completed: {
         type: Boolean,
         default: false
+    },
+
+    // each task will store its author's ObjectId
+    // 'ref': allows to reference the 'User' model id to this field (foreign key)
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'User'
     }
 
 });

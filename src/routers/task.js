@@ -1,5 +1,5 @@
 const express = require('express');
-
+const auth = require('../middleware/auth');
 const Task = require('../models/task');
 
 // create a new router for task endpoints
@@ -50,10 +50,14 @@ router.get('/tasks/:id', async (req, res) => {
 
 // POST /tasks: create a new task and persist
 // make async callback
-router.post('/tasks', async (req, res) => {
+// make it use the authentication middleware (provides the author's document in the request)
+router.post('/tasks', auth, async (req, res) => {
 
-    // create a new task model instance
-    const task = new Task(req.body);
+    // create a new task model instance with the author's id
+    const task = new Task({
+        ...req.body,
+        owner: req.user._id
+    });
 
     // try to save
     // success: 201
