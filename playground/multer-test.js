@@ -9,7 +9,36 @@ app.use(express.json());
 // create a new multer.Instance
 // dest: name of the folder where all the file uploads should be stored (/images)
 const upload = multer({
-    dest: 'images'
+
+    // destination path: /images
+    dest: 'images',
+
+    // limits: limit filezise to 1MB
+    limits: {
+        fileSize: 1000000
+    },
+
+    // fileFilter: define which files can be uploaded
+    // req: the request object
+    // file: the uploaded file object properties
+    // cb: callback to determine what to do with upload
+    fileFilter(req, file, cb) {
+
+        // use regular expression to match .doc and .docx files
+        // if they are not; use callback to return an Error and do not upload
+        if (!file.originalname.match(/\.doc[x]{0,1}$/)) {
+            return cb(new Error('Please upload a Word Document'));
+        }
+
+        // if file is a Word document, set the error to undefined and the second
+        // boolean to true as a flag to proceed with download
+        cb(undefined, true);
+
+        // this silently ignores the upload; do not do this
+        // cb(undefined, false);
+
+    }
+
 });
 
 // create a new endpoint for the user to store these files
