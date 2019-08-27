@@ -86,3 +86,7 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+
+# File Uploads (Node.js Section 14)
+images/
+avatars/

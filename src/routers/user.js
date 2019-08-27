@@ -5,8 +5,16 @@ const User = require('../models/user');
 // import the authentication middleware
 const auth = require('../middleware/auth');
 
+// multer library to upload files
+const multer = require('multer');
+
 // create a new router for user-related routes
 const router = new express.Router();
+
+// store user profile images on /avatars
+const avatar = multer({
+    dest: 'avatars'
+});
 
 // GET /users/me: fetch logged in user
 // make callback async
@@ -43,6 +51,12 @@ router.post('/users', async (req, res) => {
         res.status(400).send(err);
     }
 
+});
+
+// POST /users/me/avatar: store user profile picture
+// on request form-body, search for the 'avatar' key and store file on /avatars
+router.post('/users/me/avatar', avatar.single('avatar'), (req, res) => {
+    res.status(201).send(); 
 });
 
 // POST /users/login: login with user credentials
