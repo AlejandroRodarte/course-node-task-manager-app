@@ -13,7 +13,29 @@ const router = new express.Router();
 
 // store user profile images on /avatars
 const avatar = multer({
-    dest: 'avatars'
+
+    // destination path: /avatars
+    dest: 'avatars',
+
+    // limit filesize to 1MB
+    limits: {
+        fileSize: 1000000
+    },
+
+    // file filter
+    fileFilter(req, file, cb) {
+
+        // allow only .jpg, .jpeg or .png files
+        // sad path: return callback with error
+        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+            return cb(new Error('Please upload either a .jpg, .jpeg or .png file.'));
+        }
+
+        // happy path: return callback with no error an flag to let update begin
+        cb(undefined, true);
+
+    }
+
 });
 
 // GET /users/me: fetch logged in user
