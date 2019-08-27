@@ -65,7 +65,12 @@ const userSchema = new mongoose.Schema({
             required: true
         }
 
-    }]
+    }],
+
+    // avatar field: store binary data of the user's profile picture 
+    avatar: {
+        type: Buffer
+    }
 
 }, {
     // enable timestamps (createdAt and updatedAt)

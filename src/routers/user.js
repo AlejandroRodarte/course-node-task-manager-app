@@ -14,9 +14,6 @@ const router = new express.Router();
 // store user profile images on /avatars
 const avatar = multer({
 
-    // destination path: /avatars
-    dest: 'avatars',
-
     // limit filesize to 1MB
     limits: {
         fileSize: 1000000
@@ -77,8 +74,22 @@ router.post('/users', async (req, res) => {
 
 // POST /users/me/avatar: store user profile picture
 // on request form-body, search for the 'avatar' key and store file on /avatars
-router.post('/users/me/avatar', avatar.single('avatar'), (req, res) => {
-    res.status(201).send(); 
+// place before the upload middleware the authentication check
+router.post('/users/me/avatar', auth, avatar.single('avatar'), async (req, res) => {
+    
+    // by not configuring the 'dest' property on the multer instance, Multer grants
+    // access to the file to upload on the Express route handler so that we can persist
+    // it into a database
+
+    // the place where the file is found is on req.file
+    // req.file.buffer contains the file's binary data
+    req.user.avatar = req.file.buffer;
+
+    // persist the changes to the database
+    await req.user.save();
+
+    res.status(201).send();
+
 }, (error, req, res, next) => {
 
     // when an error is thrown on middleware, send back JSON with error message
@@ -206,6 +217,26 @@ router.delete('/users/me', auth, async (req, res) => {
     } catch (err) {
         // error on request: 500
         res.status(500).send();
+    }
+
+});
+
+// DELETE /users/me/avatar: delete a user's profile picture
+router.delete('/users/me/avatar', auth, async (req, res) => {
+
+    // try to
+    try {
+
+        // clear the user's avatar field and persist the changes
+        req.user.avatar = undefined;
+        await req.user.save();
+
+        res.status(200).send();
+        
+    } catch (err) {
+        res.status(500).send({
+            error: err.message
+        });
     }
 
 });
