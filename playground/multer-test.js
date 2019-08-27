@@ -41,11 +41,26 @@ const upload = multer({
 
 });
 
+const errorMiddleware = (req, res, next) => {
+    throw new Error('From my middleware');
+};
+
 // create a new endpoint for the user to store these files
 // upload.single() middleware: store a single file with the name of 'upload'
 // basically, look for a file named 'upload' when the request comes in
 app.post('/upload', upload.single('upload'), (req, res) => {
     res.send();
+}, (error, req, res, next) => {
+
+    // the Express http methods accepts a final callback which runs when any middleware or the 
+    // route handler itself throws an error (this also works for get, patch and delete methods)
+
+    // in this case, in case of a thrown error, we want to send as a response a simple JSON object
+    // with the error message and that's it
+    res.status(400).send({
+        error: error.message
+    });
+
 });
 
 app.listen(port, () => {

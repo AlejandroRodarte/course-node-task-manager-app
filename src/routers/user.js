@@ -79,6 +79,13 @@ router.post('/users', async (req, res) => {
 // on request form-body, search for the 'avatar' key and store file on /avatars
 router.post('/users/me/avatar', avatar.single('avatar'), (req, res) => {
     res.status(201).send(); 
+}, (error, req, res, next) => {
+
+    // when an error is thrown on middleware, send back JSON with error message
+    res.status(400).send({
+        error: error.message
+    });
+
 });
 
 // POST /users/login: login with user credentials
