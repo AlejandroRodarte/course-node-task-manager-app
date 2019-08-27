@@ -12,11 +12,30 @@ router.get('/tasks', auth, async (req, res) => {
 
     // match empty object
     const match = {};
+    
+    // sort empty object
+    const sort = {};
 
     // if 'complete' query param exists, set a 'completed' property on the empty object
     // with the corresponding boolean value
     if (req.query.completed) {
         match.completed = req.query.completed === 'true' ? true : false;
+    }
+
+    // if 'sortBy' query param exists
+    if (req.query.sortBy) {
+
+        // the sorting data comes in a format of param:error, so split by the ':' character
+        const arr = req.query.sortBy.split(':');
+
+        // get the parameter name and the type of order
+        const param = arr[0];
+        const order = arr[1];
+
+        // set a new property to sort with the name of the param as key
+        // its value is determined by the value of the order results (asc = 1, desc = -1)
+        sort[param] = order === 'asc' ? 1 : -1;
+
     }
 
     try {
@@ -26,6 +45,7 @@ router.get('/tasks', auth, async (req, res) => {
         // populate according to some search criteria defined in the 'match' object
         // use the 'options' property to set the 'limit' and 'skip' values
         // and set them to the values incoming from the request query params
+        // pass the 'sort' final object to sort the data
         await req
                 .user
                 .populate({
@@ -33,7 +53,8 @@ router.get('/tasks', auth, async (req, res) => {
                     match,
                     options: {
                         limit: +req.query.limit,
-                        skip: +req.query.skip
+                        skip: +req.query.skip,
+                        sort
                     }
                 })
                 .execPopulate();
