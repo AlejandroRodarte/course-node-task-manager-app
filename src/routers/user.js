@@ -42,6 +42,35 @@ router.get('/users/me', auth,  async (req, res) => {
     res.send(req.user);
 });
 
+// GET /users/id/avatar: get a user's profile picture
+router.get('/users/:id/avatar', async (req, res) => {
+
+    // get id
+    const _id = req.params.id;
+
+    try {
+
+        // get user by id
+        const user = await User.findById(_id);
+
+        // check if user was found and has a defined avatar field
+        // sad path: throw error
+        if (!user || user.avatar === undefined) {
+            throw new Error('Image not found.');
+        }
+
+        // happy path: inform the requester the data sent back is an image so it can render it
+        res.set('Content-Type', 'image/jpg');
+        res.status(200).send(user.avatar);
+
+    } catch (err) {
+        res.status(404).send({
+            error: err.message
+        });
+    }
+
+});
+
 // POST /users: create a new user
 // make the callback asynchronous to use async/await
 router.post('/users', async (req, res) => {
@@ -232,7 +261,7 @@ router.delete('/users/me/avatar', auth, async (req, res) => {
         await req.user.save();
 
         res.status(200).send();
-        
+
     } catch (err) {
         res.status(500).send({
             error: err.message
