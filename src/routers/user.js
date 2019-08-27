@@ -8,6 +8,9 @@ const auth = require('../middleware/auth');
 // multer library to upload files
 const multer = require('multer');
 
+// sharp for image conversion
+const sharp = require('sharp');
+
 // create a new router for user-related routes
 const router = new express.Router();
 
@@ -60,7 +63,7 @@ router.get('/users/:id/avatar', async (req, res) => {
         }
 
         // happy path: inform the requester the data sent back is an image so it can render it
-        res.set('Content-Type', 'image/jpg');
+        res.set('Content-Type', 'image/png');
         res.status(200).send(user.avatar);
 
     } catch (err) {
@@ -112,7 +115,12 @@ router.post('/users/me/avatar', auth, avatar.single('avatar'), async (req, res) 
 
     // the place where the file is found is on req.file
     // req.file.buffer contains the file's binary data
-    req.user.avatar = req.file.buffer;
+    // use sharp; pass the original buffer, resize to 250 x 250 px apply png() method to 
+    // convert to .png and parse back to binary data
+    const buffer = await sharp(req.file.buffer).resize({ width: 250, height: 250 }).png().toBuffer();
+
+    // store the sharp parsed image binary data
+    req.user.avatar = buffer;
 
     // persist the changes to the database
     await req.user.save();

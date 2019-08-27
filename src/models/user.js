@@ -122,9 +122,10 @@ userSchema.methods.toJSON = function() {
     const user = this;
     const userObject = user.toObject();
 
-    // delete the password and tokens properties
+    // delete the password and tokens properties; also delete the avatar binary data
     delete userObject.password;
     delete userObject.tokens;
+    delete userObject.avatar;
 
     // return filtered user object. JSON.stringify() will not contemplate deleted
     // properties (used by Express when sending a response)
