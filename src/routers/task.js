@@ -24,11 +24,17 @@ router.get('/tasks', auth, async (req, res) => {
         // find all tasks where their 'owner' foreign key matches the logged in user's
         // primary key
         // populate according to some search criteria defined in the 'match' object
+        // use the 'options' property to set the 'limit' and 'skip' values
+        // and set them to the values incoming from the request query params
         await req
                 .user
                 .populate({
                     path: 'tasks',
-                    match
+                    match,
+                    options: {
+                        limit: +req.query.limit,
+                        skip: +req.query.skip
+                    }
                 })
                 .execPopulate();
 
