@@ -156,3 +156,56 @@ test('Should not delete account for unauthenticated user.', async () => {
             .expect(401);
 
 });
+
+// test uploading avatar images on authenticated users
+test('Should upload avatar image.', async () => {
+
+    // POST /users/me/avatar and send token as a header
+    // use attach() to attach a file as a key/value pair just as we did with Postman
+    // expect a 201 CREATED response
+    await request(app)
+            .post('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .attach('avatar', 'tests/fixtures/profile-pic.jpg')
+            .expect(201);
+    
+    // get the user from the database and check the its binary data is equal to a Buffer type
+    // we use toEqual() since we are comparing objects and use expect.any() to not match value, but
+    // a data type
+    const user = await User.findById(userOneId);
+    expect(user.avatar).toEqual(expect.any(Buffer));
+
+});
+
+// test that user fields have been updated
+test('Should update valid user fields.', async () => {
+
+    // PATCH /users/me and set authorization header,
+    // send an update to the name and expect a 200 OK response
+    await request(app)
+            .patch('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                name: 'Patricia Mendoza'
+            })
+            .expect(200);
+    
+    // get the user from the database and match the update user name with the name we provided hardcoded
+    const user = await User.findById(userOneId);
+    expect(user.name).toBe('Patricia Mendoza');
+
+});
+
+// test that PATCH /users/me does not update invalid fields
+test('Should not update invalid user fields.', async () => {
+
+    // make the request with authorization and expect a 400 response
+    await request(app)
+            .patch('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                location: 'Chihuahua'
+            })
+            .expect(400);
+
+});
