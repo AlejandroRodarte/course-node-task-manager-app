@@ -100,8 +100,8 @@ userSchema.methods.generateAuthToken = async function () {
     const user = this;
 
     // create the new token: place in the JWT payload the unique id identifier (parse to String)
-    // and place a random secret key
-    const token = jwt.sign({ _id: user._id.toString() }, 'alejandroRodarte');
+    // and place a random secret key (using environment variable to set the key)
+    const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
 
     // append to the 'tokens' array the new token
     // note: for some reason in Mongoose to push new elements in an array you have to use concat()

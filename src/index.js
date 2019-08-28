@@ -13,8 +13,8 @@ const taskRouter = require('./routers/task');
 // run express method to start up Express
 const app = express();
 
-// use the Heroku assigned port, if not, port 3000 for development
-const port = process.env.PORT || 3000;
+// use the Heroku assigned port, if not, port 3000 for development (through environment variable)
+const port = process.env.PORT;
 
 // parse all request/response body to JSON
 app.use(express.json());

@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
-const connectionUrl = 'mongodb://127.0.0.1:27017/task-app-api';
 
-// make mongoose connect to our MongoDB database name
-mongoose.connect(connectionUrl, {
+// make mongoose connect to our MongoDB database name coming from the environment variable
+mongoose.connect(process.env.MONGODB_URL, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useUnifiedTopology: true,

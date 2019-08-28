@@ -10,9 +10,9 @@ const auth = async (req, res, next) => {
         // get the token from the 'Authorization' header and remove the 'Bearer ' part
         const token = req.header('Authorization').replace('Bearer ', '');
 
-        // decode the token body with the private key
+        // decode the token body with the private key (using environment variable to set the key)
         // verify() also checks that the token has not expired yet
-        const decoded = jwt.verify(token, 'alejandroRodarte');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         // use the decoded body, which contains the user id, to find the id
         // the second query object property allows to search for the encoded token in the array of tokens
