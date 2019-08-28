@@ -35,14 +35,34 @@ test('Should sign up a new user.', async () => {
 
     // use the supertest function to pass in the Express app, assert a POST /users
     // http request, send a hardcoded request body and expect a 201 response status code
-    await request(app)
-            .post('/users')
-            .send({
-                name: 'Patricia Mendoza',
-                email: 'pedosvacacow@hotmail.com',
-                password: 'guadalupana'
-            })
-            .expect(201);
+    // store the response body in a variable
+    const response = 
+        await request(app)
+                .post('/users')
+                .send({
+                    name: 'Patricia Mendoza',
+                    email: 'pedosvacacow@hotmail.com',
+                    password: 'guadalupana'
+                })
+                .expect(201);
+
+    // search the POSTed user in the database
+    const user = await User.findById(response.body.user._id);
+
+    // expect the fetched user to not be null (found user)
+    expect(user).not.toBeNull();
+
+    // expect the response mody to match the response object we set on toMatchObject()
+    expect(response.body).toMatchObject({
+        user: {
+            name: 'Patricia Mendoza',
+            email: 'pedosvacacow@hotmail.com'
+        },
+        token: user.tokens[0].token
+    });
+
+    // expect the user's password (hashed) to not match a plaintext password
+    expect(user.pasword).not.toBe('guadalupana');
     
 });
 
@@ -51,13 +71,21 @@ test('Should login existing user.', async () => {
 
     // make a POST /users/login request and send good credentials
     // expect a 200 http status code
-    await request(app)
-            .post('/users/login')
-            .send({
-                email: userOne.email,
-                password: userOne.password
-            })
-            .expect(200);
+    const response = 
+        await request(app)
+                .post('/users/login')
+                .send({
+                    email: userOne.email,
+                    password: userOne.password
+                })
+                .expect(200);
+    
+    // get the logged in user from the database
+    const user = await User.findById(userOneId);
+
+    // expect that the token in the response body matches the SECOND token in the tokens array
+    // of that user (he started with one token)
+    expect(response.body.token).toBe(user.tokens[1].token);
 
 });
 
@@ -105,11 +133,16 @@ test('Should delete account for authenticated user.', async () => {
 
     // run DELETE /users/me with the Authorization header attached and a valid token
     // expect a 200
-    await request(app)
-            .delete('/users/me')
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-            .expect(200);
+    const response = 
+        await request(app)
+                .delete('/users/me')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+                .expect(200);
+    
+    // fetch the deleted user and expect such user to be null since it was deleted from the database
+    const user = await User.findById(userOneId);
+    expect(user).toBeNull();
 
 });
 
