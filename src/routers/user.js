@@ -93,7 +93,7 @@ router.post('/users', async (req, res) => {
         await user.save();
 
         // send a welcome email to the user
-        // sendWelcomeEmail(user.email, user.name);
+        sendWelcomeEmail(user.email, user.name);
 
         // generate token and persist again
         const token = await user.generateAuthToken();
@@ -260,7 +260,7 @@ router.delete('/users/me', auth, async (req, res) => {
         await req.user.remove();
 
         // and send a cancellation email to the user
-        // sendCancelationEmail(req.user.email, req.user.name);
+        sendCancelationEmail(req.user.email, req.user.name);
 
         res.status(200).send(req.user);
 
