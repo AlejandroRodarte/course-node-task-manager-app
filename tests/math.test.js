@@ -37,7 +37,7 @@ test('Should convert 0 C to 32 F', () => {
 // use the done() function argument to let Jest know when all async tasks are done
 test('Async test demo', (done) => {
     setTimeout(() => {
-        expect(1).toBe(2);
+        expect(2).toBe(2);
         done();
     }, 2000);
 });
@@ -54,5 +54,5 @@ test('Should add two numbers', (done) => {
 // use async/await since Jest will actually wait for the Promises to be resolved before running expect()
 test('Should add two numbers with async/await', async () => {
     const sum = await add(2, 3);
-    expect(sum).toBe(6);
+    expect(sum).toBe(5);
 });
