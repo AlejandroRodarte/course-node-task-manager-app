@@ -1,36 +1,18 @@
 const request = require('supertest');
 const app = require('../src/app');
-const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
 const User = require('../src/models/user');
-
-// the user id
-const userOneId = new mongoose.Types.ObjectId();
-
-// add the id to the user and a genereated token
-const userOne = {
-    _id: userOneId,
-    name: 'Alejandro Rodarte',
-    email: 'alejandrorodarte1@gmail.com',
-    password: 'guadalupana',
-    tokens: [{
-        token: jwt.sign({ _id: userOneId }, process.env.JWT_SECRET)
-    }]
-};
+const { userOneId, userOne, initDatabase } = require('./fixtures/db');
 
 // code that runs BEFORE each test()
-// delete ALL users in the testing database
-// and persist a dummy user for testing purposes
-beforeEach(async () => {
-    await User.deleteMany();
-    await new User(userOne).save();
-});
+// initialize the database
+beforeEach(initDatabase);
 
 // code that runs AFTER each test()
-afterEach(() => {
-    console.log('afterEach() called');
-});
+// afterEach(() => {
+//     console.log('afterEach() called');
+// });
 
+// test the sign up a new user
 test('Should sign up a new user.', async () => {
 
     // use the supertest function to pass in the Express app, assert a POST /users
