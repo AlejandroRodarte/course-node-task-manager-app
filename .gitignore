@@ -90,3 +90,4 @@ typings/
 # File Uploads (Node.js Section 14)
 images/
 avatars/
+config/
