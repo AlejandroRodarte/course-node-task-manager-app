@@ -1,7 +1,7 @@
 const request = require('supertest');
 const app = require('../src/app');
 const User = require('../src/models/user');
-const { userOneId, userOne, initDatabase } = require('./fixtures/db');
+const { userOneId, userOne, userTwo, initDatabase } = require('./fixtures/db');
 
 // code that runs BEFORE each test()
 // initialize the database
@@ -187,6 +187,46 @@ test('Should not update invalid user fields.', async () => {
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .send({
                 location: 'Chihuahua'
+            })
+            .expect(400);
+
+});
+
+test('Should not signup user with invalid name/email/password.', async () => {
+
+    // POST /users with an invalid email: expecting a 400 status code
+    await request(app)
+            .post('/users')
+            .send({
+                name: 'Magdaleno',
+                email: 'jabbahotmail.com',
+                password: 'querollo'
+            })
+            .expect(400);
+
+});
+
+test('Should not update user if unauthenticated.', async () => {
+    
+    // PATCH /users/me without an 'Authorization' header with a token: expecting a 401
+    await request(app)
+            .patch('/users/me')
+            .send({
+                password: 'jabbathehutt'
+            })
+            .expect(401);
+
+});
+
+test('Should not update user with invalid name/email/password.', async () => {
+
+    // PATCH /users/me with an auth token and a password that fails the validate()
+    // function run in the taskSchema (password that contains the word 'password'): expecting a 400
+    await request(app)
+            .patch('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                password: 'password'
             })
             .expect(400);
 

@@ -30,7 +30,7 @@ const userTwo = {
     }]
 };
 
-// four hardcoded tasks to test on the two users we have
+// eight hardcoded tasks to test on the two users we have
 const taskOne = {
     _id: new mongoose.Types.ObjectId(),
     description: 'Complete Node.js course',
@@ -59,9 +59,37 @@ const taskFour = {
     owner: userTwo._id
 };
 
+const taskFive = {
+    _id: new mongoose.Types.ObjectId(),
+    description: 'Complete GraphQL course',
+    completed: false,
+    owner: userOne._id
+};
+
+const taskSix = {
+    _id: new mongoose.Types.ObjectId(),
+    description: 'Complete Typescript course',
+    completed: true,
+    owner: userOne._id
+};
+
+const taskSeven = {
+    _id: new mongoose.Types.ObjectId(),
+    description: 'Walk the dog',
+    completed: false,
+    owner: userTwo._id
+};
+
+const taskEight = {
+    _id: new mongoose.Types.ObjectId(),
+    description: 'Clean the windows',
+    completed: true,
+    owner: userTwo._id
+};
+
 // initialize the database
 // delete ALL users and tasks in the testing database
-// add all the two users and four tasks we have to test our routes
+// add all the two users and eight tasks we have to test our routes
 const initDatabase = async () => {
     await User.deleteMany();
     await Task.deleteMany();
@@ -71,6 +99,10 @@ const initDatabase = async () => {
     await new Task(taskTwo).save();
     await new Task(taskThree).save();
     await new Task(taskFour).save();
+    await new Task(taskFive).save();
+    await new Task(taskSix).save();
+    await new Task(taskSeven).save();
+    await new Task(taskEight).save();
 };
 
 // export everything!
@@ -79,5 +111,12 @@ module.exports = {
     userOne,
     userTwo,
     taskOne,
+    taskTwo,
+    taskThree,
+    taskFour,
+    taskFive,
+    taskSix,
+    taskSeven,
+    taskEight,
     initDatabase
 }
